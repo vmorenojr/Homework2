@@ -1,6 +1,15 @@
 Dicionário de Dados por Arquivo
 ===============================
 
+ENEM 2015
+---------
+
+| **CAMPO**               | **DESCRIÇÃO**                                  |
+|-------------------------|------------------------------------------------|
+| CODIGO DA ENTIDADE      | Identificador da escola                        |
+| NUMERO DE PARTICIPANTES | Número de alunos da escola que realizou o ENEM |
+| Classificacao           | Avaliação da escola no ENEM (0 a 4)            |
+
 Censo Escolar 2013 (INEP/MEC)
 -----------------------------
 

@@ -5,7 +5,7 @@
 
 This contest aimed at predicting how a high schools will perform in the Brazilian national exam ENEM. 
 
-Three datasets containing information about schools in São Paulo city were provided (they are in the Data folder). The file ENEM2015.csv contains the classification of the high schools in ENEM 2015, classifying each school in a scale from 0 to 4, where 4 corresponds to the best schools. The goal was to use information from the different sources in order to predict the performance of the students in the ENEM exam in 2015. 
+Four datasets containing information about schools in São Paulo city were provided (they are in the Data folder). The file ENEM2015.csv contains the classification of the high schools in ENEM 2015, classifying each school in a scale from 0 to 4, where 4 corresponds to the best schools. The goal was to use information from the different sources in order to predict the performance of the students in the ENEM exam in 2015. 
  
 In order to build the classification model, the following steps were taken:
  
