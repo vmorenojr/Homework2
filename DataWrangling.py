@@ -37,20 +37,20 @@ censo.head()
 
 #%%
 print('Columns of the string type:')
-print(censo.select_dtypes('object').columns.to_list())
+print(list(censo.select_dtypes('object').columns))
 print()
 print('Columns of numeric type:')
-print(censo.select_dtypes('number').columns.to_list())
+print(list(censo.select_dtypes('number').columns))
 
 #%%
 rendimento.head()
 
 #%%
 print('Columns of the string type:')
-print(rendimento.select_dtypes('object').columns.to_list())
+print(list(rendimento.select_dtypes('object').columns))
 print()
 print('Columns of numeric type:')
-print(rendimento.select_dtypes('number').columns.to_list())
+print(list(rendimento.select_dtypes('number').columns))
 
 #%% [markdown]
 # The last column of the dataframe is ill-formatted. 
@@ -70,10 +70,10 @@ escolas.head()
 
 #%%
 print('Columns of the string type:')
-print(escolas.select_dtypes('object').columns.to_list())
+print(list(escolas.select_dtypes('object').columns))
 print()
 print('Columns of numeric type:')
-print(escolas.select_dtypes('number').columns.to_list())
+print(list(escolas.select_dtypes('number').columns))
 
 #%% [markdown]
 # ### Checking if the number of schools match in all files
@@ -153,9 +153,9 @@ print('Censo:', censo.shape[0])
 print('Rendimento:', rendimento.shape[0])
 print('Escolas:', escolas.shape[0], '\n')
 
-censo.to_csv('Data/censo.csv', index=False)
-rendimento.to_csv('Data/rendimento.csv', index=False)
-escolas.to_csv('Data/escolas.csv', index=False)
+censo.to_csv('Data/censo.csv', index=False, encoding='utf-8')
+rendimento.to_csv('Data/rendimento.csv', index=False, encoding='utf-8')
+escolas.to_csv('Data/escolas.csv', index=False, encoding='utf-8')
 
 #%% [markdown]
 # ## Missing values
@@ -193,9 +193,9 @@ print('Columns with missing values in dataframe Escolas:', '\n',
       escolas_miss.sort_values(by='Missing',ascending=False))
 
 #%%
-censo_miss.to_csv('Data/censo_miss.csv', index=False)
-rendimento_miss.to_csv('Data/rendimento_miss.csv', index=False)
-escolas_miss.to_csv('Data/escolas_miss.csv', index=False)
+censo_miss.to_csv('Data/censo_miss.csv', index=False, encoding='utf-8')
+rendimento_miss.to_csv('Data/rendimento_miss.csv', index=False, encoding='utf-8')
+escolas_miss.to_csv('Data/escolas_miss.csv', index=False, encoding='utf-8')
 
 #%% [markdown]
 # Alghough the 'rendimento' dataframe has no missing values, 'censo' and 
@@ -422,6 +422,6 @@ print('The final dataframe has', schools.shape[1],
 schools.describe()
 
 #%%
-schools.to_csv('Data/Schools.csv', index=False)
+schools.to_csv('Data/Schools.csv', index=False, encoding='utf-8')
 
 #%%

@@ -107,12 +107,15 @@ print('Accuracy: %.3f' % score)
 # I will predict the values in the test dataset now.
 
 #%%
-print('Accuracy on test data:', tree_classifier.score(Xtest, ytest))
+tree_accuracy = tree_classifier.score(Xtest, ytest)
+
+print('Accuracy on test data: %.3f' % tree_accuracy)
 print('Confusion matrix:')
 print(confusion_matrix(ytest, tree_classifier.predict(Xtest)))
     
 #%% [markdown]
 #### Bagging
+# I will start the analyisis using an arbitrary parameter configuration.
 
 #%%
 tree_classifier = DecisionTreeClassifier(random_state=0)
@@ -126,11 +129,8 @@ scores = np.mean(cross_val_score(bagging, X, y,
 print ('Accuracy: %.3f' % scores)
 
 #%% [markdown]
-# The accuracy of the model for the training set was higher than 
-# that of the single decision tree.
-#
-# I will vary the number of models in the tree to identify the
-# the optimum value for the hyperparameter.
+# # I will vary the number of models in the tree to identify the
+# the optimum value.
 
 #%%
 param_range = [10, 50, 100, 200, 300, 500, 800, 1000, 1200, 1500, 1800]
@@ -148,31 +148,55 @@ g = sns.relplot(x='Models', y='Accuracy',
 g.fig.autofmt_xdate()
 
 #%% [markdown]
-# The chart indicates that an adequate performance can be obtained 
-# with 300 models. I will predict the values in the test dataset 
-# using this value.
+# Next, I will search for a better combination of hyperparameters to
+# try to increase the accuracy of the model.
 
 #%%
+search_grid = {'n_estimators':[50, 500, 1000, 1500],
+               'max_samples':[0.6, 0.7, 0.8],
+               'max_features':[0.6, 0.7, 0.8]}
+
+search_func = GridSearchCV(estimator=bagging,
+                           param_grid=search_grid,
+                           scoring='accuracy',
+                           cv=crossvalidation)
+search_func.fit(X, y)
+best_params = search_func.best_params_
+best_score = search_func.best_score_
+print('Best parameters: %s' % best_params)
+print('Best accuracy: %.3f' % best_score)
+
+#%% [markdown]
+# I will predict the values in the test dataset using the optimum
+# parameter value.
+
+#%%
+tree_classifier = DecisionTreeClassifier(random_state=0)
+bagging = BaggingClassifier(tree_classifier, 
+                            max_samples=best_params['max_samples'], 
+                            max_features=best_params['max_features'], 
+                            n_estimators=best_params['n_estimators'])
 bagging = bagging.fit(X,y)
-print('Accuracy on test data: %.3f' % bagging.score(Xtest, ytest))
+bagging_accuracy = bagging.score(Xtest, ytest)
+
+print('Accuracy on test data: %.3f' % bagging_accuracy)
 print('Confusion matrix:')
 print(confusion_matrix(ytest, bagging.predict(Xtest)))
     
 #%% [markdown]
 #### Random Forest
+# Again, I will start with an arbitrary parameters configuration.
 
 #%% 
 RF_cls = RandomForestClassifier(n_estimators=300,
-                               random_state=1)
+                                random_state=1)
 score = np.mean(cross_val_score(RF_cls, X, y, 
                                 scoring='accuracy', 
                                 cv=crossvalidation))
 print('Accuracy: %.3f' % score) 
 
 #%% [markdown]
-# The accuracy of the random forest was lower than that obtained
-# with the previous model. I will repeat the analysis varying the
-# number of models.
+# I will repeat the analysis varying the number of models.
 
 #%%
 train_scores, test_scores = validation_curve(RF_cls, X, y,
@@ -189,9 +213,8 @@ g = sns.relplot(x='Models', y='Accuracy',
 g.fig.autofmt_xdate()
 
 #%% [markdown]
-# The chart shows that the best trade-off is to set the number of
-# models to 300. I will search for a combination of hyperparameters to try to 
-# increase the accuracy of the model.
+# Next, I will search for a better combination of hyperparameters to
+# try to increase the accuracy of the model.
 
 #%%
 search_grid = {'n_estimators':[50, 100, 300],
@@ -199,9 +222,9 @@ search_grid = {'n_estimators':[50, 100, 300],
                'min_samples_leaf': [1, 10, 30]}
 
 search_func = GridSearchCV(estimator=RF_cls,
-                            param_grid=search_grid,
-                            scoring='accuracy',
-                            cv=crossvalidation)
+                           param_grid=search_grid,
+                           scoring='accuracy',
+                           cv=crossvalidation)
 search_func.fit(X, y)
 best_params = search_func.best_params_
 best_score = search_func.best_score_
@@ -209,21 +232,20 @@ print('Best parameters: %s' % best_params)
 print('Best accuracy: %.3f' % best_score)
 
 #%% [markdown]
-# The best combination of parameters generated a higher accuracy value.
-# I will use it to predict the values in the test dataset.
+# I will use the best combination of parameters to predict 
+# the ENEM classification for schools in the test dataset.
 
 #%%
-RF_cls = RandomForestClassifier(max_features=50,
-                                min_samples_leaf=1,
-                                n_estimators=100,
+RF_cls = RandomForestClassifier(max_features=best_params['max_features'],
+                                min_samples_leaf=best_params['min_samples_leaf'],
+                                n_estimators=best_params['n_estimators'],
                                 random_state=1)
 RF_cls = RF_cls.fit(X,y)
-print('Accuracy on test data: %.3f' % RF_cls.score(Xtest, ytest))
+rf_accuracy = RF_cls.score(Xtest, ytest)
+
+print('Accuracy on test data: %.3f' % rf_accuracy)
 print('Confusion matrix:')
 print(confusion_matrix(ytest, RF_cls.predict(Xtest)))
-    
-#%% [markdown]
-# The new model showed a higher accuracy value than the previous ones.
 
 #%% [markdown]
 #### Boosting
@@ -233,6 +255,8 @@ print(confusion_matrix(ytest, RF_cls.predict(Xtest)))
 
 #%% [markdown]
 ##### Adaboost
+# First, I will train a model with a basic arbitrary parameter
+# configuration.
 
 #%%
 ada = AdaBoostClassifier(n_estimators=1000, 
@@ -246,9 +270,8 @@ score = np.mean(cross_val_score(ada, X, y,
                                 cv=crossvalidation))
 print('Accuracy: %.3f' % score)
 
-#%%
 #%% [markdown]
-# The accuracy of the adaboost model was reasonably low. I will 
+# To try to improve the accuracy of the model, I will 
 # explore variations in the number of estimators.
 
 #%%
@@ -267,14 +290,13 @@ g = sns.relplot(x='Models', y='Accuracy',
 g.fig.autofmt_xdate()
 
 #%% [markdown]
-# The chart indicates that the best accuracy is obtained around 2000
-# estimators. I will search for a better combination of number of 
-# estimators and learning rate to further increase the accuracy of
+# I will search for a better combination of number of estimators
+# and learning rate to further increase the accuracy of
 # the model.
 
 #%%
-search_grid = {'n_estimators': [15000, 1800, 2000, 2200, 1500],
-               'learning_rate': [0.005, 0.01, 0.015, 0.02]}
+search_grid = {'n_estimators': [1000, 1500, 1800, 2000, 2500],
+               'learning_rate': [0.01, 0.02, 0.03]}
 
 search_func = GridSearchCV(estimator=ada,
                            param_grid=search_grid,
@@ -287,22 +309,25 @@ print('Best parameters: %s' % best_params)
 print('Best accuracy: %.3f' % best_score)
 
 #%% [markdown]
-# The best combination of parameters generated a higher accuracy value.
-# I will use it to predict the values in the test dataset.
+# The best combination of parameters will be used to predict 
+# the values of ENEM classification in the test dataset.
 
 #%%
-ada = AdaBoostClassifier(n_estimators=1000, 
-                         learning_rate=0.01, 
+ada = AdaBoostClassifier(n_estimators=best_params['n_estimators'], 
+                         learning_rate=best_params['learning_rate'], 
                          base_estimator=DecisionTreeClassifier(max_depth=1),
                          random_state=1)
 ada = ada.fit(X,y)
-print('Accuracy on test data: %.3f' % ada.score(Xtest, ytest))
+ada_accuracy = ada.score(Xtest, ytest)
+
+print('Accuracy on test data: %.3f' % ada_accuracy)
 print('Confusion matrix:')
 print(confusion_matrix(ytest, ada.predict(Xtest)))
 
 #%% [markdown]
 ##### Gradient Boosting Classifier
-
+# Next, I will fit a gradient boosting classifier with an initial
+# parameter setting.
 #%%
 crossvalidation = KFold(n_splits=5, 
                         shuffle=True, 
@@ -320,15 +345,16 @@ print('Accuracy: %.3f' % score)
 
 #%% [markdown]
 # I will explore combinations of the parameters of the model to
-# try to improve the MSE.
+# try to improve its accuracy.
 
 #%%
 search_grid =  {'subsample': [1.0, 0.9], 
                 'max_depth': [2, 3, 5], 
-                'n_estimators': [500 , 1000, 2000, 2500]}
-search_func = GridSearchCV(estimator=GBR,
+                'n_estimators': [250, 500 , 1000, 1500],
+                'learning_rate': [0.1, 0.2, 0.3],}
+search_func = GridSearchCV(estimator=GBC,
                            param_grid=search_grid,
-                           scoring='neg_mean_squared_error',
+                           scoring='accuracy',
                            cv=crossvalidation)
 search_func.fit(X,y)
 
@@ -341,16 +367,29 @@ print('Best mean squared error: %.3f' % best_score)
 # The best combination of parameters will be used to predict the
 # classification in ENEM for the schools in the test dataset. 
 #%%
-GBC = GradientBoostingClassifier(n_estimators=300, 
-                                 subsample=1.0, 
-                                 max_depth=3, 
-                                 learning_rate=0.1, 
+GBC = GradientBoostingClassifier(n_estimators=best_params['n_estimators'], 
+                                 subsample=best_params['subsample'], 
+                                 max_depth=best_params['max_depth'], 
+                                 learning_rate=best_params['learning_rate'], 
                                  random_state=1)
 GBC = GBC.fit(X,y)
-print('Accuracy on test data: %.3f' % GBC.score(Xtest, ytest))
+gb_accuracy = GBC.score(Xtest, ytest)
+
+print('Accuracy on test data: %.3f' % gb_accuracy)
 print('Confusion matrix:')
 print(confusion_matrix(ytest, GBC.predict(Xtest)))
 
 #%% [markdown]
 ### Conclusion
-# The best model with the highest accuracy obtained was 
+# Here are the accuracy for each of the models previously fitted to 
+# the test data:
+
+#%%
+print('Decision tree:     %.3f' % tree_accuracy)
+print('Bagging:           %.3f' % bagging_accuracy)
+print('Random forest:     %.3f' % rf_accuracy)
+print('Adaboost:          %.3f' % ada_accuracy)
+print('Gradient boosting: %.3f' % tree_accuracy)
+
+
+#%%
