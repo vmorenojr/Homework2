@@ -12,8 +12,9 @@
 #%%
 import numpy as np
 import pandas as pd
+import seaborn as sb
 
-pd.set_option('display.float_format', lambda x: '%.3f' % x)
+pd.set_option('display.float_format', lambda x: '%.2f' % x)
 
 #%%
 # Reading the data into dataframes
@@ -327,7 +328,7 @@ escolas = escolas_long.pivot(index='CODMEC', columns='NewVar',
                              values='Values').reset_index()
 
 #%% [markdown]
-# Finally, I will remove rows with missing values from both dataframes, and
+# I will remove rows with missing values from both dataframes, and
 # merge them into a new 'schools' dataframe. The new dataframe will be recorded 
 # to the 'Schools.csv' file.
 
@@ -336,16 +337,91 @@ schools.dropna(inplace=True)
 escolas.dropna(inplace=True)
 
 schools = schools.merge(escolas, left_on='CD_ESCOLA', right_on='CODMEC')
-
-schools.to_csv('Data/Schools.csv', index=False)      
-
 schools.head()
 
 #%% [markdown]
 # The final dataset contains data for 436 schools.
 
+# I will now drop columns that are not relevant to the analysis
+# and set the type of categorical features to string.
+
 #%%
-print(schools.shape)
-schools.describe().apply("{0:.3f}".format)
+schools.drop(['ID', 'LONGITUDE', 'LATITUDE', 'CODESCTX', 'NOMEESC',
+              'NOMEMUN', 'NOMDIST', 'COD_DEP',
+              'TIP_DEP', 'BAIRRO', 'CEP', 'END_ESC', 'NUM_ESC',
+              'DDD', 'TELEFONE', 'LOCALIZA'], 
+             axis=1, inplace=True)
+
+#%%
+schools.CD_ESCOLA = [str(x) for x in schools.CD_ESCOLA]
+schools.CODMUN = [str(x) for x in schools.CODMUN]
+schools.CODDIST = [str(int(x)) for x in schools.CODDIST]
+
+#%% [markdown]
+# The next step is to check the feature for redundant information. To do this
+# I will generate the correlations between variables and print them in a 
+# heatmap.
+
+#%%
+sb.heatmap(schools.corr(), cmap='viridis', center=0)
+
+#%% [markdown]
+# The chart shows several variables with very high absolute correlations, 
+# suggesting the information they contain is redundant. I will list the
+# variables with correlations equal to 1.0 or -1.0.
+
+#%%
+
+corr_1 = schools.select_dtypes('number').corr()
+
+col_list = []
+
+for col in corr_1.columns:
+      if (sum(corr_1[col] == 1.0) >= 2) | (sum(corr_1[col] == -1.0) >= 1):
+            col_list.append(col)
+
+corr_1 = schools[col_list].corr()
+corr_1
+
+#%%
+while True:
+      cols_drop = list(corr_1.index[(corr_1.iloc[:, 0] == 1) | 
+                                    (corr_1.iloc[:, 0] == -1)])
+      schools.drop(cols_drop[1:len(cols_drop)], 
+                   axis=1, inplace=True)
+      corr_1.drop(cols_drop, 
+                  axis=1, inplace=True)
+      corr_1.drop(cols_drop, 
+                  axis=0, inplace=True)
+      if corr_1.shape[0] == 0:
+            break
+
+#%% [markdown] 
+# In addition, many correlations were not generated. This happens when
+# the variances of at least one of the variables is zero. Features with
+# variances equal to zero do not contain information relevant 
+# to the analysis and will be dropped.
+
+#%%
+std_0 = schools.select_dtypes('number').std()
+cols_std_0 = list(std_0[std_0 == 0].index)
+
+print('Columns with variance equal to 0.0:')
+print(cols_std_0)
+
+schools.drop(cols_std_0, axis=1, inplace=True)
+
+#%% [markdown]
+# Finally, the dataframe will be recorded to the 'Schools.csv' file.
+
+#%%
+print('The final dataframe has', schools.shape[1],
+      'columns and', schools.shape[0], 'rows.')
+
+#%%
+schools.describe()
+
+#%%
+schools.to_csv('Data/Schools.csv', index=False)
 
 #%%
