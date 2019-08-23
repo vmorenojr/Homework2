@@ -85,10 +85,7 @@ for depth in range(1,10):
     print('Depth: %i Accuracy: %.3f' % (depth,score))
     
 #%% [markdown]
-# Based on the accuracy results, a tree with 6 splits seems to be
-# the best option.
-#
-# Nevertheless, to get an effective reduction and simplifiction, 
+# To get an effective reduction and simplifiction, 
 # I will set the min_samples_split to 30 and avoid terminal leaves
 # that are too small by setting min_samples_leaf to 10.
 
@@ -129,7 +126,7 @@ scores = np.mean(cross_val_score(bagging, X, y,
 print ('Accuracy: %.3f' % scores)
 
 #%% [markdown]
-# # I will vary the number of models in the tree to identify the
+# I will vary the number of models in the tree to identify the
 # the optimum value.
 
 #%%
