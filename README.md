@@ -1,5 +1,5 @@
-# Predicting Schools Performance 
-**Introduction to Data Science Bootcamp**
+# Predicting School Performance 
+**Introduction to Data Science**
 
 **Fundação Getulio Vargas - July 2019**
 
